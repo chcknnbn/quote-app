@@ -14,7 +14,7 @@ interface Props {
 }
 
 // ─── Idle View ───────────────────────────────
-function IdleView() {
+function IdleView({ empty }: { empty?: boolean }) {
   return (
     <motion.div
       key="idle"
@@ -38,16 +38,24 @@ function IdleView() {
         </div>
       </div>
 
-      {/* Instruction */}
-      <p className="text-cream/70 text-lg font-light leading-relaxed">
-        화면을 터치하여
-        <br />
-        <span className="text-cream font-medium">오늘의 명언</span>을 뽑아보세요
-      </p>
-
-      <p className="text-muted/50 text-[10px] tracking-widest uppercase mt-8">
-        tap anywhere
-      </p>
+      {empty ? (
+        <p className="text-muted text-base font-light leading-relaxed">
+          등록된 명언이 없습니다.
+          <br />
+          <span className="text-muted/60 text-sm">관리자 페이지에서 추가해주세요.</span>
+        </p>
+      ) : (
+        <>
+          <p className="text-cream/70 text-lg font-light leading-relaxed">
+            화면을 터치하여
+            <br />
+            <span className="text-cream font-medium">오늘의 명언</span>을 뽑아보세요
+          </p>
+          <p className="text-muted/50 text-[10px] tracking-widest uppercase mt-8">
+            tap anywhere
+          </p>
+        </>
+      )}
     </motion.div>
   )
 }
@@ -101,6 +109,7 @@ export function QuoteSlotMachine({ quotes }: Props) {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const startSpinning = useCallback(() => {
+    if (quotes.length === 0) return
     setPhase('spinning')
     if ('vibrate' in navigator) navigator.vibrate(20)
 
@@ -156,7 +165,7 @@ export function QuoteSlotMachine({ quotes }: Props) {
       }
     >
       <AnimatePresence mode="wait">
-        {phase === 'idle' && <IdleView />}
+        {phase === 'idle' && <IdleView empty={quotes.length === 0} />}
         {phase === 'spinning' && <SpinningView textRef={textRef} />}
         {phase === 'revealed' && selectedQuote && (
           <motion.div

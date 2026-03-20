@@ -144,7 +144,11 @@ let devStore: Quote[] | null = null
 export async function getQuotes(): Promise<Quote[]> {
   if (redis) {
     const quotes = await redis.get<Quote[]>(REDIS_KEY)
-    return quotes ?? []
+    if (!quotes || quotes.length === 0) {
+      await redis.set(REDIS_KEY, DEFAULT_QUOTES)
+      return DEFAULT_QUOTES
+    }
+    return quotes
   }
 
   if (devStore === null) {

@@ -1,8 +1,25 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import type { Quote } from '@/types/quote'
+
+const FAVORITES_KEY = 'quote_favorites'
+
+function getFavoriteIds(): string[] {
+  try {
+    return JSON.parse(localStorage.getItem(FAVORITES_KEY) ?? '[]')
+  } catch {
+    return []
+  }
+}
+
+function toggleFavoriteId(id: string): boolean {
+  const ids = getFavoriteIds()
+  const next = ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]
+  localStorage.setItem(FAVORITES_KEY, JSON.stringify(next))
+  return next.includes(id)
+}
 
 interface RevealedQuoteProps {
   quote: Quote
@@ -30,6 +47,10 @@ function fadeIn(delay: number) {
 export function RevealedQuote({ quote, onReset }: RevealedQuoteProps) {
   const [isFavorite, setIsFavorite] = useState(false)
   const [copied, setCopied] = useState(false)
+
+  useEffect(() => {
+    setIsFavorite(getFavoriteIds().includes(quote.id))
+  }, [quote.id])
 
   const shareText =
     quote.type === 'original'
@@ -113,7 +134,7 @@ export function RevealedQuote({ quote, onReset }: RevealedQuoteProps) {
         >
           {/* Favorite */}
           <button
-            onClick={() => setIsFavorite(!isFavorite)}
+            onClick={() => setIsFavorite(toggleFavoriteId(quote.id))}
             aria-label="즐겨찾기"
             className="flex flex-col items-center gap-1 text-muted hover:text-gold transition-colors duration-200"
           >
