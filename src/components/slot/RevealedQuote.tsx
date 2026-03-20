@@ -1,25 +1,10 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { useState, useCallback, useEffect } from 'react'
+import { useEffect } from 'react'
 import type { Quote } from '@/types/quote'
-
-const FAVORITES_KEY = 'quote_favorites'
-
-function getFavoriteIds(): string[] {
-  try {
-    return JSON.parse(localStorage.getItem(FAVORITES_KEY) ?? '[]')
-  } catch {
-    return []
-  }
-}
-
-function toggleFavoriteId(id: string): boolean {
-  const ids = getFavoriteIds()
-  const next = ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]
-  localStorage.setItem(FAVORITES_KEY, JSON.stringify(next))
-  return next.includes(id)
-}
+import { useStoryShare } from '@/hooks/useStoryShare'
+import { preloadStoryFonts } from '@/lib/storyFonts'
 
 interface RevealedQuoteProps {
   quote: Quote
@@ -44,32 +29,27 @@ function fadeIn(delay: number) {
   }
 }
 
+const SHARE_LABEL: Record<string, string> = {
+  idle: '공유',
+  generating: '생성 중',
+  done: '완료',
+  error: '오류',
+}
+
+const SHARE_ICON: Record<string, string> = {
+  idle: '↑',
+  generating: '···',
+  done: '✓',
+  error: '!',
+}
+
 export function RevealedQuote({ quote, onReset }: RevealedQuoteProps) {
-  const [isFavorite, setIsFavorite] = useState(false)
-  const [copied, setCopied] = useState(false)
+  const { share, state: shareState } = useStoryShare(quote)
 
+  // Preload fonts in the background as soon as the quote is revealed
   useEffect(() => {
-    setIsFavorite(getFavoriteIds().includes(quote.id))
-  }, [quote.id])
-
-  const shareText =
-    quote.type === 'original'
-      ? `"${quote.translation}"\n— ${quote.source}`
-      : `"${quote.text}"\n— ${quote.source}`
-
-  const handleShare = useCallback(async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({ text: shareText })
-      } catch {
-        // User cancelled share
-      }
-    } else {
-      await navigator.clipboard.writeText(shareText)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    }
-  }, [shareText])
+    preloadStoryFonts().catch(() => undefined)
+  }, [])
 
   return (
     <div className="min-h-dvh flex flex-col items-center justify-center px-8 py-16 safe-bottom">
@@ -132,29 +112,18 @@ export function RevealedQuote({ quote, onReset }: RevealedQuoteProps) {
           {...fadeIn(quote.type === 'original' ? 0.9 : 0.55)}
           className="flex items-center justify-center gap-8 mt-14"
         >
-          {/* Favorite */}
-          <button
-            onClick={() => setIsFavorite(toggleFavoriteId(quote.id))}
-            aria-label="즐겨찾기"
-            className="flex flex-col items-center gap-1 text-muted hover:text-gold transition-colors duration-200"
-          >
-            <span className={`text-xl ${isFavorite ? 'text-gold' : ''}`}>
-              {isFavorite ? '♥' : '♡'}
-            </span>
-            <span className="text-[9px] tracking-wider">
-              {isFavorite ? '저장됨' : '저장'}
-            </span>
-          </button>
-
           {/* Share */}
           <button
-            onClick={handleShare}
-            aria-label="공유"
-            className="flex flex-col items-center gap-1 text-muted hover:text-cream transition-colors duration-200"
+            onClick={share}
+            disabled={shareState === 'generating'}
+            aria-label="스토리 카드 공유"
+            className="flex flex-col items-center gap-1 text-muted hover:text-cream transition-colors duration-200 disabled:opacity-50 disabled:cursor-wait"
           >
-            <span className="text-xl">↑</span>
+            <span className={`text-xl transition-colors duration-200 ${shareState === 'done' ? 'text-gold' : shareState === 'error' ? 'text-red-400' : ''}`}>
+              {SHARE_ICON[shareState]}
+            </span>
             <span className="text-[9px] tracking-wider">
-              {copied ? '복사됨' : '공유'}
+              {SHARE_LABEL[shareState]}
             </span>
           </button>
 
