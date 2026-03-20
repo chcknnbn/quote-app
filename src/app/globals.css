@@ -1,0 +1,104 @@
+/* Google Fonts — loaded via CSS to avoid next/font/google Turbopack issues */
+@import url("https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Noto+Sans+KR:wght@300;400;500;700&display=swap");
+
+@import "tailwindcss";
+
+/* ─── Custom Design Tokens ─── */
+@theme {
+  /* Color Palette — Dark Minimal */
+  --color-surface: #0A0A14;
+  --color-card: #12121F;
+  --color-gold: #C9A84C;
+  --color-cream: #F0EDE4;
+  --color-muted: #8A8595;
+  --color-divider: #2A2A3D;
+
+  /* Custom Animations */
+  --animate-glow-pulse: glow-pulse 2.4s ease-in-out infinite;
+  --animate-flicker: flicker 0.12s ease-in-out infinite;
+  --animate-float: float 3s ease-in-out infinite;
+}
+
+/* Font stacks */
+@theme {
+  --font-sans: "Noto Sans KR", system-ui, sans-serif;
+  --font-serif: "EB Garamond", Georgia, serif;
+}
+
+/* ─── Keyframes ─── */
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.5; }
+  50%       { opacity: 1; }
+}
+
+@keyframes flicker {
+  0%, 100% { opacity: 0.9; }
+  50%       { opacity: 0.25; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-6px); }
+}
+
+/* ─── Base Styles ─── */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  height: 100%;
+  background-color: #0A0A14;
+}
+
+body {
+  min-height: 100%;
+  background-color: #0A0A14;
+  color: #F0EDE4;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+/* ─── Mobile Safe Area ─── */
+.safe-bottom {
+  padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+}
+
+/* ─── Spinning Text ─── */
+.spinning-text {
+  filter: blur(0.6px);
+  will-change: contents;
+}
+
+/* ─── Gold Divider ─── */
+.gold-divider {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    #C9A84C 30%,
+    #C9A84C 70%,
+    transparent 100%
+  );
+  transform-origin: center;
+}
+
+/* ─── Scrollbar (Admin) ─── */
+.admin-scroll {
+  user-select: text;
+}
+
+.admin-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.admin-scroll::-webkit-scrollbar-track {
+  background: #12121F;
+}
+
+.admin-scroll::-webkit-scrollbar-thumb {
+  background: #2A2A3D;
+  border-radius: 2px;
+}
